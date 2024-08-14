@@ -601,14 +601,14 @@ class ApplyInstantIDControlNet:
 
 
 NODE_CLASS_MAPPINGS = {
-    "InstantIDModelLoader": InstantIDModelLoader,
-    "InstantIDFaceAnalysis": InstantIDFaceAnalysis,
-    "ApplyInstantID": ApplyInstantID,
-    "ApplyInstantIDAdvanced": ApplyInstantIDAdvanced,
-    "FaceKeypointsPreprocessor": FaceKeypointsPreprocessor,
+    "BrevInstantIDModelLoader": InstantIDModelLoader,
+    "BrevInstantIDFaceAnalysis": InstantIDFaceAnalysis,
+    "BrevApplyInstantID": ApplyInstantID,
+    "BrevApplyInstantIDAdvanced": ApplyInstantIDAdvanced,
+    "BrevFaceKeypointsPreprocessor": FaceKeypointsPreprocessor,
 
-    "InstantIDAttentionPatch": InstantIDAttentionPatch,
-    "ApplyInstantIDControlNet": ApplyInstantIDControlNet,
+    "BrevInstantIDAttentionPatch": InstantIDAttentionPatch,
+    "BrevApplyInstantIDControlNet": ApplyInstantIDControlNet,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
