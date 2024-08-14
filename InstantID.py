@@ -612,12 +612,12 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "InstantIDModelLoader": "Load InstantID Model",
-    "InstantIDFaceAnalysis": "InstantID Face Analysis",
-    "ApplyInstantID": "Apply InstantID",
-    "ApplyInstantIDAdvanced": "Apply InstantID Advanced",
-    "FaceKeypointsPreprocessor": "Face Keypoints Preprocessor",
+    "BrevInstantIDModelLoader": "Load InstantID Model",
+    "BrevInstantIDFaceAnalysis": "InstantID Face Analysis",
+    "BrevApplyInstantID": "Apply InstantID",
+    "BrevApplyInstantIDAdvanced": "Apply InstantID Advanced",
+    "BrevFaceKeypointsPreprocessor": "Face Keypoints Preprocessor",
 
-    "InstantIDAttentionPatch": "InstantID Patch Attention",
-    "ApplyInstantIDControlNet": "InstantID Apply ControlNet",
+    "BrevInstantIDAttentionPatch": "InstantID Patch Attention",
+    "BrevApplyInstantIDControlNet": "InstantID Apply ControlNet",
 }
