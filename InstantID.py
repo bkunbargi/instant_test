@@ -28,6 +28,9 @@ folder_paths.folder_names_and_paths["instantid"] = (current_paths, folder_paths.
 
 INSIGHTFACE_DIR = os.path.join(folder_paths.models_dir, "insightface")
 
+def log_shape(tensor, name):
+    print(f"\033[36mDEBUG: Shape of {name}: {tensor.shape}\033[0m")
+
 def draw_kps(image_pil, kps, color_list=[(255,0,0), (0,255,0), (0,0,255), (255,255,0), (255,0,255)]):
     stickwidth = 4
     limbSeq = np.array([[0, 2], [1, 2], [3, 2], [4, 2]])
@@ -64,13 +67,17 @@ class InstantID(torch.nn.Module):
         self.cross_attention_dim = cross_attention_dim
         self.output_cross_attention_dim = output_cross_attention_dim
         self.clip_extra_context_tokens = clip_extra_context_tokens
-
+        print(f"Initializing InstantID with cross_attention_dim={cross_attention_dim}, "
+                      f"output_cross_attention_dim={output_cross_attention_dim}, "
+                      f"clip_embeddings_dim={clip_embeddings_dim}, "
+                      f"clip_extra_context_tokens={clip_extra_context_tokens}")
         self.image_proj_model = self.init_proj()
 
         self.image_proj_model.load_state_dict(instantid_model["image_proj"])
         self.ip_layers = To_KV(instantid_model["ip_adapter"])
 
     def init_proj(self):
+        logging.debug("Initializing projection model.")
         image_proj_model = Resampler(
             dim=self.cross_attention_dim,
             depth=4,
@@ -86,10 +93,13 @@ class InstantID(torch.nn.Module):
     @torch.inference_mode()
     def get_image_embeds(self, clip_embed, clip_embed_zeroed):
         #image_prompt_embeds = clip_embed.clone().detach()
+        logging.debug(f"Generating image embeddings with input shapes clip_embed={clip_embed.shape}, "
+                      f"clip_embed_zeroed={clip_embed_zeroed.shape}")
         image_prompt_embeds = self.image_proj_model(clip_embed)
         #uncond_image_prompt_embeds = clip_embed_zeroed.clone().detach()
         uncond_image_prompt_embeds = self.image_proj_model(clip_embed_zeroed)
-
+        logging.debug(f"Generated image embeddings with output shapes image_prompt_embeds={image_prompt_embeds.shape}, "
+                      f"uncond_image_prompt_embeds={uncond_image_prompt_embeds.shape}")
         return image_prompt_embeds, uncond_image_prompt_embeds
 
 class ImageProjModel(torch.nn.Module):
@@ -98,13 +108,17 @@ class ImageProjModel(torch.nn.Module):
 
         self.cross_attention_dim = cross_attention_dim
         self.clip_extra_context_tokens = clip_extra_context_tokens
+        logging.debug(f"Initializing ImageProjModel with cross_attention_dim={cross_attention_dim}, "
+                      f"clip_embeddings_dim={clip_embeddings_dim}, clip_extra_context_tokens={clip_extra_context_tokens}")
         self.proj = torch.nn.Linear(clip_embeddings_dim, self.clip_extra_context_tokens * cross_attention_dim)
         self.norm = torch.nn.LayerNorm(cross_attention_dim)
 
     def forward(self, image_embeds):
+        logging.debug(f"Forward pass in ImageProjModel with input image_embeds shape={image_embeds.shape}")
         embeds = image_embeds
         clip_extra_context_tokens = self.proj(embeds).reshape(-1, self.clip_extra_context_tokens, self.cross_attention_dim)
         clip_extra_context_tokens = self.norm(clip_extra_context_tokens)
+        logging.debug(f"Output of ImageProjModel forward pass has shape={clip_extra_context_tokens.shape}")
         return clip_extra_context_tokens
 
 class To_KV(torch.nn.Module):
@@ -281,11 +295,13 @@ class ApplyInstantID:
     def apply_instantid(self, instantid, insightface, control_net, image, model, positive, negative, start_at, end_at, weight=.8, ip_weight=None, cn_strength=None, noise=0.35, image_kps=None, mask=None, combine_embeds='average'):
         self.dtype = torch.float16 if comfy.model_management.should_use_fp16() else torch.float32
         self.device = comfy.model_management.get_torch_device()
-
+        logging.debug(f"ApplyInstantID called with start_at={start_at}, end_at={end_at}, weight={weight}, "
+                  f"ip_weight={ip_weight}, cn_strength={cn_strength}, noise={noise}")
         ip_weight = weight if ip_weight is None else ip_weight
         cn_strength = weight if cn_strength is None else cn_strength
 
         face_embed = extractFeatures(insightface, image)
+        logging.debug(f"Extracted face_embed with shape={face_embed.shape if face_embed is not None else None}")
         if face_embed is None:
             raise Exception('Reference Image: No face detected.')
 
@@ -390,7 +406,7 @@ class ApplyInstantID:
                 c.append(n)
             cond_uncond.append(c)
             is_cond = False
-
+        logging.debug("Patch and ControlNet processing completed.")
         return(work_model, cond_uncond[0], cond_uncond[1], )
 
 class ApplyInstantIDAdvanced(ApplyInstantID):
