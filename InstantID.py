@@ -406,6 +406,20 @@ class ApplyInstantID:
                 c.append(n)
             cond_uncond.append(c)
             is_cond = False
+        print(f"work_model type: {type(work_model)}")
+        print(f"cond_uncond[0] type: {type(cond_uncond[0])}")
+        print(f"cond_uncond[1] type: {type(cond_uncond[1])}")
+        if hasattr(work_model, 'shape'):
+            print(f"work_model shape: {work_model.shape}")
+    
+        for i, cond in enumerate(cond_uncond):
+            if isinstance(cond, list):
+                for j, c in enumerate(cond):
+                    print(f"cond_uncond[{i}][{j}] type: {type(c)}")
+                    if isinstance(c, list) and len(c) > 1 and hasattr(c[1], 'shape'):
+                        print(f"cond_uncond[{i}][{j}][1] shape: {c[1].shape}")
+                    elif hasattr(c, 'shape'):
+                        print(f"cond_uncond[{i}][{j}] shape: {c.shape}")            
         print("Patch and ControlNet processing completed.")
         return(work_model, cond_uncond[0], cond_uncond[1], )
 
